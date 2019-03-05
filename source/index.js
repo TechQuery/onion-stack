@@ -1,4 +1,4 @@
-export default class MiddleStack extends Array {
+export default class OnionStack extends Array {
     /**
      * @param  {...Function} middleware
      */
@@ -7,32 +7,42 @@ export default class MiddleStack extends Array {
     }
 
     /**
+     * @protected
+     *
+     * @param {Function} func
+     * @param {?Array}   parameter
+     */
+    async exec(func, parameter) {
+        const iterator = func.apply(null, parameter);
+
+        if (!((iterator || '').next instanceof Function)) return;
+
+        await iterator.next();
+
+        await this.execute.apply(this, parameter);
+
+        const { done } = await iterator.next();
+
+        if (!done)
+            console.warn('Only one `yield` is made sense in a Middleware');
+    }
+
+    /**
      * @param {...*} parameter
      */
     async execute(...parameter) {
-        const func = this[++this.last];
+        const middleware = this[++this.last];
 
-        if (func)
-            try {
-                const iterator = func.apply(null, parameter);
+        try {
+            if (middleware instanceof OnionStack)
+                await middleware.execute.apply(middleware, parameter);
+            else if (middleware instanceof Function)
+                await this.exec(middleware, parameter);
+        } catch (error) {
+            this.last--;
 
-                if ((iterator || '').next instanceof Function) {
-                    await iterator.next();
-
-                    await this.execute.apply(this, parameter);
-
-                    const { done } = await iterator.next();
-
-                    if (!done)
-                        console.warn(
-                            'Only one `yield` is made sense in a Middleware'
-                        );
-                }
-            } catch (error) {
-                this.last--;
-
-                throw error;
-            }
+            throw error;
+        }
 
         this.last--;
     }

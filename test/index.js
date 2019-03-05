@@ -1,4 +1,4 @@
-import MiddleStack from '../source';
+import OnionStack from '../source';
 
 function delay(seconds) {
     return new Promise(resolve => setTimeout(resolve, seconds * 1000));
@@ -32,14 +32,14 @@ var list = [],
     ];
 
 /**
- * @test {MiddleStack}
+ * @test {OnionStack}
  */
-describe('Call stack', () => {
+describe('Middleware callstack', () => {
     /**
-     * @test {MiddleStack#execute}
+     * @test {OnionStack#execute}
      */
     it('Execute normally', async () => {
-        stack = MiddleStack.from(stack);
+        stack = OnionStack.from(stack);
 
         await stack.execute();
 
@@ -49,10 +49,12 @@ describe('Call stack', () => {
     });
 
     /**
-     * @test {MiddleStack#execute}
+     * @test {OnionStack#exec}
      */
     it('Execute abnormally', async () => {
         list.length = 0;
+
+        const right = stack[1];
 
         stack[1] = async function*() {
             await delay(0.1);
@@ -69,5 +71,20 @@ describe('Call stack', () => {
         list.should.be.eql([1, 4, 6]);
 
         stack.last.should.be.equal(-1);
+
+        stack[1] = right;
+    });
+
+    /**
+     * @test {OnionStack#execute}
+     */
+    it('Nested stack', async () => {
+        list.length = 0;
+
+        stack.splice(2, 0, OnionStack.from(stack));
+
+        await stack.execute();
+
+        list.should.be.eql([1, 4, 1, 4, 6, 5, 2, 5, 2]);
     });
 });

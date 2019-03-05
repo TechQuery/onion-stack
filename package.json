@@ -1,6 +1,6 @@
 {
-    "name": "middle-stack",
-    "version": "0.1.0",
+    "name": "onion-stack",
+    "version": "0.2.0",
     "description": "Middleware framework based on Async Generator of ECMAScript 2018, inspired by Koa 2",
     "keywords": [
         "middleware",
@@ -9,18 +9,18 @@
         "ecmascript",
         "koa"
     ],
-    "license": "ISC",
+    "license": "LGPL-3.0",
     "author": "shiy2008@gmail.com",
-    "homepage": "https://tech-query.me/middle-stack/",
+    "homepage": "https://tech-query.me/onion-stack/",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/TechQuery/middle-stack.git"
+        "url": "git+https://github.com/TechQuery/onion-stack.git"
     },
     "bugs": {
-        "url": "https://github.com/TechQuery/middle-stack/issues"
+        "url": "https://github.com/TechQuery/onion-stack/issues"
     },
     "module": "source/index.js",
-    "main": "dist/index.js",
+    "main": "dist/index.min.js",
     "directories": {
         "test": "test"
     },
@@ -43,7 +43,6 @@
         "@babel/polyfill": "^7.2.5"
     },
     "devDependencies": {
-        "@babel/plugin-proposal-async-generator-functions": "^7.2.0",
         "@babel/polyfill": "^7.2.5",
         "@babel/preset-env": "^7.3.4",
         "@babel/register": "^7.0.0",
@@ -61,9 +60,6 @@
     "babel": {
         "presets": [
             "@babel/preset-env"
-        ],
-        "plugins": [
-            "@babel/plugin-proposal-async-generator-functions"
         ]
     },
     "prettier": {
