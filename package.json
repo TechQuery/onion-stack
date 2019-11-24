@@ -1,6 +1,6 @@
 {
     "name": "onion-stack",
-    "version": "0.2.0",
+    "version": "0.3.1",
     "description": "Middleware framework based on Async Generator of ECMAScript 2018, inspired by Koa 2",
     "keywords": [
         "middleware",
@@ -19,51 +19,64 @@
     "bugs": {
         "url": "https://github.com/TechQuery/onion-stack/issues"
     },
-    "module": "source/index.js",
-    "main": "dist/index.min.js",
-    "directories": {
-        "test": "test"
-    },
+    "source": "source/index.ts",
+    "types": "dist/index.d.ts",
+    "main": "dist/onion-stack.umd.js",
+    "module": "dist/onion-stack.js",
     "scripts": {
-        "format": "prettier --write \"{,!(node_modules|.git|dist|docs)/**/}*.{html,md,css,less,js,json,yml,yaml}\"",
-        "lint": "eslint source/ test/ --fix",
-        "pack": "amd-bundle source/index dist/index -m",
-        "build": "npm run format  &&  npm run lint  &&  npm run pack",
-        "debug": "npm run pack  &&  mocha --inspect-brk",
-        "test": "npm run build  &&  mocha --exit  &&  esdoc",
-        "prepublishOnly": "npm test",
-        "help": "esdoc  &&  web-server docs/ -o"
+        "lint": "lint-staged",
+        "pack-docs": "typedoc --name \"Onion Stack\" --out docs/ source/",
+        "build": "rm -rf dist/  &&  microbundle --name=OnionStack  &&  npm run pack-docs",
+        "debug": "node --inspect node_modules/jest/bin/jest --runInBand",
+        "test": "lint-staged  &&  jest",
+        "prepublishOnly": "npm test  &&  npm run build",
+        "help": "npm run pack-docs  &&  open-cli docs/index.html"
+    },
+    "lint-staged": {
+        "*.{md,json,yml}": [
+            "prettier --write",
+            "git add"
+        ],
+        "*.ts": [
+            "prettier --write",
+            "eslint --fix",
+            "git add"
+        ]
     },
     "husky": {
         "hooks": {
-            "pre-commit": "npm test  &&  git add ."
+            "pre-commit": "npm test",
+            "pre-push": "npm run build"
         }
     },
-    "peerDependencies": {
-        "@babel/polyfill": "^7.2.5"
-    },
     "devDependencies": {
-        "@babel/polyfill": "^7.2.5",
-        "@babel/preset-env": "^7.3.4",
-        "@babel/register": "^7.0.0",
-        "amd-bundle": "^1.7.7",
-        "esdoc": "^1.1.0",
-        "esdoc-ecmascript-proposal-plugin": "^1.0.0",
-        "esdoc-standard-plugin": "^1.0.0",
-        "eslint": "^5.15.0",
-        "husky": "^1.3.1",
-        "koapache": "^1.0.6",
-        "mocha": "^6.0.2",
-        "prettier": "^1.16.4",
-        "should": "^13.2.3"
-    },
-    "babel": {
-        "presets": [
-            "@babel/preset-env"
-        ]
+        "@types/jest": "^24.0.23",
+        "@typescript-eslint/parser": "^2.8.0",
+        "eslint": "^6.7.0",
+        "eslint-config-prettier": "^6.7.0",
+        "eslint-plugin-prettier": "^3.1.1",
+        "husky": "^3.1.0",
+        "jest": "^24.9.0",
+        "lint-staged": "^9.4.3",
+        "microbundle": "^0.11.0",
+        "open-cli": "^5.0.0",
+        "prettier": "^1.19.1",
+        "ts-jest": "^24.2.0",
+        "typedoc": "^0.15.3",
+        "typescript": "^3.7.2"
     },
     "prettier": {
         "tabWidth": 4,
         "singleQuote": true
+    },
+    "jest": {
+        "preset": "ts-jest",
+        "testEnvironment": "node",
+        "testRegex": "/test/.*\\.(test|spec)?\\.ts$",
+        "moduleFileExtensions": [
+            "js",
+            "ts",
+            "json"
+        ]
     }
 }

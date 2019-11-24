@@ -12,11 +12,11 @@ cache:
 install:
     - npm install
 script:
-    - npm test
-    - cd ${FOLDER}
-    - git init
-    - git config user.name ${UID}
-    - git config user.email ${EMAIL}
-    - git add .
-    - git commit -m "${MESSAGE}"
-    - git push --force --quiet https://${TOKEN}@${GIT_URI}.git master:gh-pages
+    - npm run ${SCRIPT}
+deploy:
+    provider: pages
+    on:
+        branch: master
+    skip_cleanup: true
+    local_dir: ${FOLDER}
+    github_token: ${TOKEN}

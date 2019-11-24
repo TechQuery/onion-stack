@@ -1,8 +1,10 @@
 # Node.JS
 node_modules/
+package-lock.json
 
 # Building
 dist/
+.rts2_cache_*/
 docs/
 
 # IDE

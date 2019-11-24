@@ -1,11 +1,13 @@
 import OnionStack from '../source';
 
-function delay(seconds) {
+function delay(seconds: number) {
     return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
 
-var list = [],
-    stack = [
+function createExample() {
+    const list = [];
+
+    const stack_list = [
         function*() {
             list.push(1);
 
@@ -31,6 +33,9 @@ var list = [],
         }
     ];
 
+    return { list, stack_list };
+}
+
 /**
  * @test {OnionStack}
  */
@@ -39,24 +44,21 @@ describe('Middleware callstack', () => {
      * @test {OnionStack#execute}
      */
     it('Execute normally', async () => {
-        stack = OnionStack.from(stack);
+        const { stack_list, list } = createExample();
+        const stack = new OnionStack(...stack_list);
 
         await stack.execute();
 
-        list.should.be.eql([1, 4, 6, 5, 2]);
-
-        stack.last.should.be.equal(-1);
+        expect(list).toEqual(expect.arrayContaining([1, 4, 6, 5, 2]));
     });
 
     /**
      * @test {OnionStack#exec}
      */
     it('Execute abnormally', async () => {
-        list.length = 0;
+        const { stack_list, list } = createExample();
 
-        const right = stack[1];
-
-        stack[1] = async function*() {
+        stack_list[1] = async function*() {
             await delay(0.1);
 
             list.push(4);
@@ -66,25 +68,31 @@ describe('Middleware callstack', () => {
             throw Error('test');
         };
 
-        await stack.execute().should.be.rejectedWith(Error('test'));
+        const stack = new OnionStack(...stack_list);
 
-        list.should.be.eql([1, 4, 6]);
+        try {
+            await stack.execute();
+        } catch (error) {
+            expect(error).toStrictEqual(Error('test'));
+        }
 
-        stack.last.should.be.equal(-1);
-
-        stack[1] = right;
+        expect(list).toEqual(expect.arrayContaining([1, 4, 6]));
     });
 
     /**
      * @test {OnionStack#execute}
      */
     it('Nested stack', async () => {
-        list.length = 0;
+        const { stack_list, list } = createExample();
 
-        stack.splice(2, 0, OnionStack.from(stack));
+        const stack = new OnionStack(...stack_list.slice(0, 2))
+            .mount(new OnionStack(...stack_list))
+            .use(stack_list[2]);
 
         await stack.execute();
 
-        list.should.be.eql([1, 4, 1, 4, 6, 5, 2, 5, 2]);
+        expect(list).toEqual(
+            expect.arrayContaining([1, 4, 1, 4, 6, 5, 2, 5, 2])
+        );
     });
 });

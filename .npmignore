@@ -1,6 +1,6 @@
 .editorconfig
 .eslintrc.json
 test/
-.esdoc.json
+.rts2_cache_*/
 docs/
 .travis.yml
