@@ -1,6 +1,7 @@
 # Node.JS
 node_modules/
 package-lock.json
+yarn.lock
 
 # Building
 dist/
@@ -8,11 +9,8 @@ dist/
 docs/
 
 # IDE
-.vscode/
+.vscode/settings.json
 .idea/
-
-# Online platform
-.github/
 
 # OS
 .DS_Store

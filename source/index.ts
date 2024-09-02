@@ -1,10 +1,16 @@
-export type Middleware = AsyncGenerator | Generator | Function;
+export type Nextable = Generator | AsyncGenerator;
+
+export type Middleware =
+    | AsyncGeneratorFunction
+    | GeneratorFunction
+    | ((...data: any[]) => any | Promise<any>);
 
 const { push, [Symbol.iterator]: iterator } = Array.prototype;
 
 export default class OnionStack {
     length = 0;
-    cursor = 0;
+
+    [index: number]: Middleware;
 
     constructor(...list: Middleware[]) {
         for (const middleware of list) this.use(middleware);
@@ -16,34 +22,31 @@ export default class OnionStack {
         return this;
     }
 
-    [Symbol.iterator]() {
-        return iterator.call(this);
-    }
+    [Symbol.iterator] = iterator;
 
     mount(stack: OnionStack) {
-        return this.use(this.execute.bind(stack));
+        return this.use(() => stack.execute());
     }
 
     async execute(...data: any[]) {
-        const middleware = this[this.cursor];
+        const nextStack: Nextable[] = [];
 
-        const { next } =
-            (middleware() as AsyncIterator<any> | Iterator<any>) || {};
+        for (const middleware of Array.from<Middleware>(this)) {
+            const result = middleware(...data);
 
-        if (next instanceof Function) await next();
+            if (
+                typeof result?.[Symbol.iterator] === 'function' ||
+                typeof result?.[Symbol.asyncIterator] === 'function'
+            ) {
+                await (result as Nextable).next();
 
-        if (this.cursor < this.length - 1)
-            try {
-                this.cursor++;
+                nextStack.push(result);
+            } else {
+                if (result instanceof Promise) await result;
 
-                await this.execute(...data);
-
-                if (next instanceof Function) await next();
-            } catch (error) {
-                this.cursor = 0;
-
-                throw error;
+                break;
             }
-        else this.cursor = 0;
+        }
+        for (let item: Nextable; (item = nextStack.pop()); ) await item.next();
     }
 }

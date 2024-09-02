@@ -1,12 +1,20 @@
 {
     "compilerOptions": {
-        "module": "es6",
-        "moduleResolution": "node",
+        "module": "UMD",
+        "moduleResolution": "Node",
         "esModuleInterop": true,
-        "target": "es5",
+        "target": "ES5",
+        "declaration": true,
         "sourceMap": true,
         "outDir": "dist/",
-        "lib": ["es2019"]
+        "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"]
     },
-    "include": ["source/**/*"]
+    "include": ["source/**/*"],
+    "typedocOptions": {
+        "name": "Onion Stack",
+        "excludeExternals": true,
+        "excludePrivate": true,
+        "readme": "./ReadMe.md",
+        "plugin": ["typedoc-plugin-mdn-links"]
+    }
 }
