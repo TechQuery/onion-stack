@@ -1,3 +1,5 @@
+export type Nextable = Generator | AsyncGenerator;
+
 export type Middleware =
     | AsyncGeneratorFunction
     | GeneratorFunction
@@ -7,7 +9,6 @@ const { push, [Symbol.iterator]: iterator } = Array.prototype;
 
 export default class OnionStack {
     length = 0;
-    cursor = 0;
 
     [index: number]: Middleware;
 
@@ -21,35 +22,31 @@ export default class OnionStack {
         return this;
     }
 
-    [Symbol.iterator]() {
-        return iterator.call(this);
-    }
+    [Symbol.iterator] = iterator;
 
     mount(stack: OnionStack) {
         return this.use(() => stack.execute());
     }
 
     async execute(...data: any[]) {
-        const middleware = this[this.cursor];
+        const nextStack: Nextable[] = [];
 
-        const { next } = middleware?.() || {};
+        for (const middleware of Array.from<Middleware>(this)) {
+            const result = middleware(...data);
 
-        if (typeof next !== 'function') return;
+            if (
+                typeof result?.[Symbol.iterator] === 'function' ||
+                typeof result?.[Symbol.asyncIterator] === 'function'
+            ) {
+                await (result as Nextable).next();
 
-        await next();
+                nextStack.push(result);
+            } else {
+                if (result instanceof Promise) await result;
 
-        if (this.cursor < this.length)
-            try {
-                this.cursor++;
-
-                await this.execute(...data);
-
-                await next();
-            } catch (error) {
-                this.cursor = 0;
-
-                throw error;
+                break;
             }
-        else this.cursor = 0;
+        }
+        for (let item: Nextable; (item = nextStack.pop()); ) await item.next();
     }
 }

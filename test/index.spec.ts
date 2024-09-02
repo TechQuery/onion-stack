@@ -10,13 +10,13 @@ function createExample() {
         function* () {
             list.push(1);
 
-            yield;
+            yield; // equal to `await next()` of Koa 2
 
             list.push(2);
 
-            yield;
+            yield; // can't be executed
 
-            list.push(3);
+            list.push(3); // can't be executed
         },
         async function* () {
             await delay(0.1);

@@ -9,11 +9,8 @@ dist/
 docs/
 
 # IDE
-.vscode/
+.vscode/settings.json
 .idea/
-
-# Online platform
-.github/
 
 # OS
 .DS_Store

@@ -3,6 +3,6 @@
 test/
 .rts2_cache_*/
 docs/
+.vscode/
 .husky/
 .github/
-.travis.yml
