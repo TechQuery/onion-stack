@@ -1,10 +1,15 @@
-export type Middleware = AsyncGenerator | Generator | Function;
+export type Middleware =
+    | AsyncGeneratorFunction
+    | GeneratorFunction
+    | ((...data: any[]) => any | Promise<any>);
 
 const { push, [Symbol.iterator]: iterator } = Array.prototype;
 
 export default class OnionStack {
     length = 0;
     cursor = 0;
+
+    [index: number]: Middleware;
 
     constructor(...list: Middleware[]) {
         for (const middleware of list) this.use(middleware);
@@ -21,24 +26,25 @@ export default class OnionStack {
     }
 
     mount(stack: OnionStack) {
-        return this.use(this.execute.bind(stack));
+        return this.use(() => stack.execute());
     }
 
     async execute(...data: any[]) {
         const middleware = this[this.cursor];
 
-        const { next } =
-            (middleware() as AsyncIterator<any> | Iterator<any>) || {};
+        const { next } = middleware?.() || {};
 
-        if (next instanceof Function) await next();
+        if (typeof next !== 'function') return;
 
-        if (this.cursor < this.length - 1)
+        await next();
+
+        if (this.cursor < this.length)
             try {
                 this.cursor++;
 
                 await this.execute(...data);
 
-                if (next instanceof Function) await next();
+                await next();
             } catch (error) {
                 this.cursor = 0;
 

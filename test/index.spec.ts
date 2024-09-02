@@ -1,14 +1,13 @@
 import OnionStack from '../source';
 
-function delay(seconds: number) {
-    return new Promise(resolve => setTimeout(resolve, seconds * 1000));
-}
+const delay = (seconds = 1) =>
+    new Promise(resolve => setTimeout(resolve, seconds * 1000));
 
 function createExample() {
-    const list = [];
+    const list: number[] = [];
 
     const stack_list = [
-        function*() {
+        function* () {
             list.push(1);
 
             yield;
@@ -19,7 +18,7 @@ function createExample() {
 
             list.push(3);
         },
-        async function*() {
+        async function* () {
             await delay(0.1);
 
             list.push(4);
@@ -28,11 +27,10 @@ function createExample() {
 
             list.push(5);
         },
-        function() {
+        function () {
             list.push(6);
         }
     ];
-
     return { list, stack_list };
 }
 
@@ -49,7 +47,7 @@ describe('Middleware callstack', () => {
 
         await stack.execute();
 
-        expect(list).toEqual(expect.arrayContaining([1, 4, 6, 5, 2]));
+        expect(list).toEqual([1, 4, 6, 5, 2]);
     });
 
     /**
@@ -58,7 +56,7 @@ describe('Middleware callstack', () => {
     it('Execute abnormally', async () => {
         const { stack_list, list } = createExample();
 
-        stack_list[1] = async function*() {
+        stack_list[1] = async function* () {
             await delay(0.1);
 
             list.push(4);
@@ -75,8 +73,7 @@ describe('Middleware callstack', () => {
         } catch (error) {
             expect(error).toStrictEqual(Error('test'));
         }
-
-        expect(list).toEqual(expect.arrayContaining([1, 4, 6]));
+        expect(list).toEqual([1, 4, 6]);
     });
 
     /**
@@ -91,8 +88,6 @@ describe('Middleware callstack', () => {
 
         await stack.execute();
 
-        expect(list).toEqual(
-            expect.arrayContaining([1, 4, 1, 4, 6, 5, 2, 5, 2])
-        );
+        expect(list).toEqual([1, 4, 1, 4, 6, 5, 2, 5, 2]);
     });
 });
